@@ -5,11 +5,13 @@ import com.obys.common.service.BaseService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.function.Function;
 
 @Service
-public class JwtService extends BaseService {
+public class JWTService extends BaseService {
 
     // key để mã hóa token.
 
@@ -26,6 +28,13 @@ public class JwtService extends BaseService {
         } catch (Exception ex) {
             return false;
         }
+    }
+    public String getTokenFromRequest(HttpServletRequest request) {
+        String authHeader = request.getHeader(Constants.AuthService.AUTHORIZATION);
+        if (authHeader != null && authHeader.startsWith(Constants.AuthService.BEARER)) {
+            return authHeader.replace(Constants.AuthService.BEARER, "");
+        }
+        return null;
     }
 
     public String getSubjectFromToken(String token) {

@@ -130,8 +130,8 @@ public class UserService extends BaseService {
     private void checkPhoneExist(String phone) {
         if (iAppUserRepo.findAppUsersByGmail(phone) != null) {
             throw new ErrorV1Exception(messageV1Exception(
-                    SystemMessageCode.AuthService.CODE_REGISTRY_GMAIL_EXIST,
-                    SystemMessageCode.AuthService.MESSAGE_REGISTRY_GMAIL_EXIST
+                    SystemMessageCode.AuthService.CODE_REGISTRY_PHONE_EXIST,
+                    SystemMessageCode.AuthService.MESSAGE_REGISTRY_PHONE_EXIST
             ));
         }
     }

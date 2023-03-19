@@ -3,7 +3,9 @@ package com.example.demomicroservice.jwt.fillter;
 
 import com.example.demomicroservice.jwt.en_code.Base64EnCode;
 import com.example.demomicroservice.service.AppUserService;
-import com.example.demomicroservice.service.JwtService;
+import com.example.demomicroservice.service.JWTService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,8 +22,11 @@ import java.io.IOException;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+
     @Resource
-    private JwtService jwtService;
+    private JWTService jwtService;
 
     @Resource
     private AppUserService appUserService;
@@ -35,7 +40,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String base64 = request.getHeader("En_code");
             String codeDecrypt = base64EnCode.decrypt(base64);
             if (codeDecrypt != null) {
-                String token = getTokenFromRequest(request);
+                String token = jwtService.getTokenFromRequest(request);
                 if (token != null) {
                     String username = jwtService.getUserNameFromJwtToken(token);
                     if (username != null && SecurityContextHolder.getContext().getAuthentication() != null) {
@@ -50,17 +55,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 }
             }
         } catch (Exception e) {
-            logger.error("Can NOT set user authentication -> Message: {}", e);
+            LOGGER.error("Can NOT set user authentication -> Message: {}" + e.getMessage());
         }
         filterChain.doFilter(request, response);
     }
 
-
-    private String getTokenFromRequest(HttpServletRequest request) {
-        String authHeader = request.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            return authHeader.replace("Bearer ", "");
-        }
-        return null;
-    }
 }
