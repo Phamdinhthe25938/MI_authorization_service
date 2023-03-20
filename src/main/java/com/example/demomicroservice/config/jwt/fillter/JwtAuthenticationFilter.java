@@ -1,7 +1,7 @@
-package com.example.demomicroservice.jwt.fillter;
+package com.example.demomicroservice.config.jwt.fillter;
 
 
-import com.example.demomicroservice.jwt.en_code.Base64EnCode;
+import com.example.demomicroservice.config.jwt.en_code.Base64EnCode;
 import com.example.demomicroservice.service.AppUserService;
 import com.example.demomicroservice.service.JWTService;
 import org.slf4j.Logger;
@@ -42,9 +42,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             if (codeDecrypt != null) {
                 String token = jwtService.getTokenFromRequest(request);
                 if (token != null) {
-                    String username = jwtService.getUserNameFromJwtToken(token);
-                    if (username != null && SecurityContextHolder.getContext().getAuthentication() != null) {
-                        if (jwtService.validateToken(token, username)) {
+                    String username = jwtService.getSubjectFromToken(token);
+                    if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                        if (jwtService.validateToken(token)) {
                             UserDetails userDetails = appUserService.loadUserByUsername(username);
                             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
                                     userDetails, null, userDetails.getAuthorities());

@@ -2,7 +2,7 @@ package com.example.demomicroservice.controller;
 
 import com.example.demomicroservice.model.dto.request.user.AccountLoginRequest;
 import com.example.demomicroservice.model.dto.request.user.AccountRegistryRequest;
-import com.example.demomicroservice.service.UserService;
+import com.example.demomicroservice.service.AuthorService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
@@ -18,7 +18,7 @@ import javax.validation.Valid;
 @RequestMapping("/api/auth")
 public class LoginController {
     @Resource
-    UserService userService;
+    AuthorService userService;
 
     @PostMapping("/login")
     public ResponseEntity<?> login(@Valid @RequestBody AccountLoginRequest request, BindingResult result) {

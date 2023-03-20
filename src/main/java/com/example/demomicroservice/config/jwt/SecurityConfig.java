@@ -1,6 +1,6 @@
-package com.example.demomicroservice.jwt;
+package com.example.demomicroservice.config.jwt;
 
-import com.example.demomicroservice.jwt.fillter.JwtAuthenticationFilter;
+import com.example.demomicroservice.config.jwt.fillter.JwtAuthenticationFilter;
 import com.example.demomicroservice.service.AppUserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

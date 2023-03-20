@@ -1,4 +1,4 @@
-package com.example.demomicroservice.jwt.en_code;
+package com.example.demomicroservice.config.jwt.en_code;
 
 import org.springframework.stereotype.Service;
 

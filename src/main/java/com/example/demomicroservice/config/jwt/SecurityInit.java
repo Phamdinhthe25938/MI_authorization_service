@@ -1,4 +1,4 @@
-package com.example.demomicroservice.jwt;
+package com.example.demomicroservice.config.jwt;
 
 
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;

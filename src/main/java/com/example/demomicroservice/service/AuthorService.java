@@ -1,11 +1,13 @@
 package com.example.demomicroservice.service;
 
+import com.example.demomicroservice.model.dto.communicate_kafka.employee.RegistryEmployeeConsumer;
 import com.example.demomicroservice.model.dto.request.user.AccountLoginRequest;
 import com.example.demomicroservice.model.dto.request.user.AccountRegistryRequest;
 import com.example.demomicroservice.model.dto.response.user.AccountLoginResponse;
 import com.example.demomicroservice.model.dto.response.user.AccountRegistryResponse;
 import com.example.demomicroservice.model.entity.AppUser;
 import com.example.demomicroservice.repository.IAppUserRepo;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.obys.common.constant.Constants;
 import com.obys.common.enums.RoleEnum;
 import com.obys.common.exception.ErrorV1Exception;
@@ -13,11 +15,11 @@ import com.obys.common.kafka.Topic;
 import com.obys.common.model.payload.response.BaseResponse;
 import com.obys.common.service.BaseService;
 import com.obys.common.system_message.SystemMessageCode;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
 import lombok.NonNull;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -36,19 +38,25 @@ import java.util.stream.Stream;
 
 
 @Service
-public class UserService extends BaseService {
+public class AuthorService extends BaseService {
+
+    private final static Logger LOGGER = LoggerFactory.getLogger(AuthorService.class);
     @Resource
     IAppUserRepo iAppUserRepo;
 
     @Resource
     private RoleService roleService;
+    @Resource
+    private JWTService jwtService;
 
     private AuthenticationManager authenticationManager;
 
     @Resource
     private ModelMapper modelMapper;
+    @Resource
+    private ObjectMapper objectMapper;
 
-    public UserService(@NonNull @Lazy AuthenticationManager authenticationManager) {
+    public AuthorService(@NonNull @Lazy AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }
 
@@ -62,7 +70,7 @@ public class UserService extends BaseService {
             User user = (User) authentication.getPrincipal();
             return responseV1(SystemMessageCode.AuthService.CODE_LOGIN_SUCCESS,
                     SystemMessageCode.AuthService.MESSAGE_LOGIN_SUCCESS
-                    , AccountLoginResponse.builder().token(createToken(user)).build());
+                    , AccountLoginResponse.builder().token(jwtService.createToken(user)).build());
         } catch (Exception e) {
             return responseV1(
                     SystemMessageCode.AuthService.CODE_LOGIN_ERROR,
@@ -90,23 +98,27 @@ public class UserService extends BaseService {
 
     @KafkaListener(topics = Topic.TOPIC_REGISTRY_EMPLOYEE)
     private void registryEmployee(ConsumerRecord<String, String> record) {
-
-    }
-
-    public String createToken(User user) {
-        return Jwts.builder()
-                .setSubject((user.getUsername()))
-                .setIssuedAt(new Date())
-                .setExpiration(new Date((new Date()).getTime() + Constants.AuthService.EXPIRE_TIME * 1000))
-                .signWith(SignatureAlgorithm.HS512, Constants.AuthService.KEY_PRIVATE)
-                .compact();
+       try {
+           String token = getTokenFromRequestUserKafka(record.headers().headers(Constants.AuthService.AUTHORIZATION).toString());
+           if (jwtService.validateToken(token)) {
+               String password = randomPassword();
+               String uuid = String.valueOf(UUID.randomUUID());
+               RegistryEmployeeConsumer employeeConsumer = objectMapper.readValue(record.value(), RegistryEmployeeConsumer.class);
+               AppUser appUser = new AppUser(uuid, employeeConsumer.getAccount(),
+                       password, employeeConsumer.getEmail(), employeeConsumer.getTelephone());
+               AppUser appUserSave = iAppUserRepo.save(appUser);
+               roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_EMPLOYEE.getCode());
+           }
+       }catch (Exception e) {
+           LOGGER.error("Registry employee ------> fail :" + e.getMessage());
+       }
     }
 
 
     public void validateRegistry(AccountRegistryRequest request) {
-       checkUserNameExist(request.getUserName());
-       checkEmailExist(request.getGmail());
-       checkPhoneExist(request.getPhoneNumber());
+        checkUserNameExist(request.getUserName());
+        checkEmailExist(request.getGmail());
+        checkPhoneExist(request.getPhoneNumber());
     }
 
     private void checkUserNameExist(String userName) {
