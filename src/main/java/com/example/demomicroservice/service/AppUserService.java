@@ -12,7 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 
-@Service
+@Service("AppUserService")
 public class AppUserService implements UserDetailsService{
     @Resource
     IAppUserRepo iAppUserRepo;

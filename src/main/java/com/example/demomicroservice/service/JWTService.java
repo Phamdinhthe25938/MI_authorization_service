@@ -14,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.Date;
 import java.util.function.Function;
 
-@Service("JWTService")
+@Service("JwtService")
 public class JWTService extends BaseService {
 
 

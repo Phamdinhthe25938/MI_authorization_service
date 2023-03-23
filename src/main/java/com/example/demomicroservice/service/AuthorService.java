@@ -1,5 +1,6 @@
 package com.example.demomicroservice.service;
 
+import com.example.demomicroservice.config.web.ApplicationContextProvider;
 import com.example.demomicroservice.model.dto.communicate_kafka.employee.RegistryEmployeeConsumer;
 import com.example.demomicroservice.model.dto.request.user.AccountLoginRequest;
 import com.example.demomicroservice.model.dto.request.user.AccountRegistryRequest;
@@ -15,6 +16,8 @@ import com.obys.common.kafka.Topic;
 import com.obys.common.model.payload.response.BaseResponse;
 import com.obys.common.service.BaseService;
 import com.obys.common.system_message.SystemMessageCode;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
@@ -41,31 +44,28 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 
-@Service
+@Service("AuthorService")
 public class AuthorService extends BaseService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(AuthorService.class);
     @Resource
     IAppUserRepo iAppUserRepo;
-
-    @Autowired
-    private ApplicationContext applicationContext;
-
     @Resource
     private RoleService roleService;
-    private final JWTService jwtService;
-
-    private final AuthenticationManager authenticationManager;
-
+    @Resource
+    @Qualifier("JwtService")
+    private  JWTService jwtService;
+    @Resource
+    private  AuthenticationManager authenticationManager;
     @Resource
     private ModelMapper modelMapper;
     @Resource
     private ObjectMapper objectMapper;
 
-    public AuthorService(@NonNull @Lazy AuthenticationManager authenticationManager,JWTService jwtService) {
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
-    }
+//    public AuthorService(@NonNull @Lazy AuthenticationManager authenticationManager,JWTService jwtService) {
+//        this.authenticationManager = authenticationManager;
+//        this.jwtService = jwtService;
+//    }
 
     @Transactional(rollbackFor = Exception.class)
     public BaseResponse<?> login(AccountLoginRequest request, BindingResult result) {
@@ -105,12 +105,16 @@ public class AuthorService extends BaseService {
 
     @KafkaListener(topics = Topic.TOPIC_REGISTRY_EMPLOYEE)
     private void registryEmployee(ConsumerRecord<String, String> record) {
-       try {
+        ApplicationContext applicationContext = ApplicationContextProvider.getApplicationContext();
+
+        try {
            Header header = record.headers().lastHeader(Constants.AuthService.AUTHORIZATION);
            if (header != null) {
                String token = new String(header.value());
-//               JWTService myService = applicationContext.getBean(JWTService.class);
                LOGGER.info("Token -------> : " + token);
+               JWTService jwtService = applicationContext.getBean("JwtService", JWTService.class);
+               IAppUserRepo iAppUserRepo = applicationContext.getBean("IAppUserRepo", IAppUserRepo.class);
+               RoleService roleService = applicationContext.getBean("RoleService", RoleService.class);
                if (jwtService.validateToken(token)) {
                    ObjectMapper objectMapperKafka = new ObjectMapper();
                    String password = randomPassword();
@@ -126,7 +130,6 @@ public class AuthorService extends BaseService {
            LOGGER.error("Registry employee ------> fail :" + e.getMessage());
        }
     }
-
 
     public void validateRegistry(AccountRegistryRequest request) {
         checkUserNameExist(request.getUserName());

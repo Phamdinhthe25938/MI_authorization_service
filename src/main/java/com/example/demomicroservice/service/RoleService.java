@@ -8,7 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 
 
-@Service
+@Service("RoleService")
 public class RoleService {
 
     @Resource
