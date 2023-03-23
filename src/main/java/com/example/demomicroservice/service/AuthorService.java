@@ -17,9 +17,13 @@ import com.obys.common.service.BaseService;
 import com.obys.common.system_message.SystemMessageCode;
 import lombok.NonNull;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.header.Header;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -44,20 +48,23 @@ public class AuthorService extends BaseService {
     @Resource
     IAppUserRepo iAppUserRepo;
 
+    @Autowired
+    private ApplicationContext applicationContext;
+
     @Resource
     private RoleService roleService;
-    @Resource
-    private JWTService jwtService;
+    private final JWTService jwtService;
 
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
 
     @Resource
     private ModelMapper modelMapper;
     @Resource
     private ObjectMapper objectMapper;
 
-    public AuthorService(@NonNull @Lazy AuthenticationManager authenticationManager) {
+    public AuthorService(@NonNull @Lazy AuthenticationManager authenticationManager,JWTService jwtService) {
         this.authenticationManager = authenticationManager;
+        this.jwtService = jwtService;
     }
 
     @Transactional(rollbackFor = Exception.class)
@@ -99,15 +106,21 @@ public class AuthorService extends BaseService {
     @KafkaListener(topics = Topic.TOPIC_REGISTRY_EMPLOYEE)
     private void registryEmployee(ConsumerRecord<String, String> record) {
        try {
-           String token = getTokenFromRequestUserKafka(record.headers().headers(Constants.AuthService.AUTHORIZATION).toString());
-           if (jwtService.validateToken(token)) {
-               String password = randomPassword();
-               String uuid = String.valueOf(UUID.randomUUID());
-               RegistryEmployeeConsumer employeeConsumer = objectMapper.readValue(record.value(), RegistryEmployeeConsumer.class);
-               AppUser appUser = new AppUser(uuid, employeeConsumer.getAccount(),
-                       password, employeeConsumer.getEmail(), employeeConsumer.getTelephone());
-               AppUser appUserSave = iAppUserRepo.save(appUser);
-               roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_EMPLOYEE.getCode());
+           Header header = record.headers().lastHeader(Constants.AuthService.AUTHORIZATION);
+           if (header != null) {
+               String token = new String(header.value());
+//               JWTService myService = applicationContext.getBean(JWTService.class);
+               LOGGER.info("Token -------> : " + token);
+               if (jwtService.validateToken(token)) {
+                   ObjectMapper objectMapperKafka = new ObjectMapper();
+                   String password = randomPassword();
+                   String uuid = String.valueOf(UUID.randomUUID());
+                   RegistryEmployeeConsumer employeeConsumer = objectMapperKafka.readValue(record.value(), RegistryEmployeeConsumer.class);
+                   AppUser appUser = new AppUser(uuid, employeeConsumer.getAccount(),
+                           password, employeeConsumer.getEmail(), employeeConsumer.getTelephone());
+                   AppUser appUserSave = iAppUserRepo.save(appUser);
+                   roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_EMPLOYEE.getCode());
+               }
            }
        }catch (Exception e) {
            LOGGER.error("Registry employee ------> fail :" + e.getMessage());
