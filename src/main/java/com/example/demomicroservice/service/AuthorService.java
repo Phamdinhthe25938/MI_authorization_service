@@ -62,11 +62,6 @@ public class AuthorService extends BaseService {
     @Resource
     private ObjectMapper objectMapper;
 
-//    public AuthorService(@NonNull @Lazy AuthenticationManager authenticationManager,JWTService jwtService) {
-//        this.authenticationManager = authenticationManager;
-//        this.jwtService = jwtService;
-//    }
-
     @Transactional(rollbackFor = Exception.class)
     public BaseResponse<?> login(AccountLoginRequest request, BindingResult result) {
         try {
