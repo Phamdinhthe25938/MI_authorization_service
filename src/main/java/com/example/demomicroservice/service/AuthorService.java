@@ -20,7 +20,9 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.producer.*;
 import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.serialization.StringSerializer;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,6 +31,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -48,6 +51,10 @@ import java.util.stream.Stream;
 public class AuthorService extends BaseService {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(AuthorService.class);
+    @Resource
+    private KafkaTemplate<String, String> kafkaTemplate;
+//    @Resource
+//    private KafkaProducer<String, String> kafkaProducer;
     @Resource
     IAppUserRepo iAppUserRepo;
     @Resource
@@ -97,14 +104,16 @@ public class AuthorService extends BaseService {
                 SystemMessageCode.AuthService.MESSAGE_REGISTRY_SUCCESS,
                 response);
     }
-
+    private static final String TOPIC = "service2-response";
+    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
     @KafkaListener(topics = Topic.TOPIC_REGISTRY_EMPLOYEE)
     private void registryEmployee(ConsumerRecord<String, String> record) {
         ApplicationContext applicationContext = ApplicationContextProvider.getApplicationContext();
-
+        String correlationId = null;
         try {
            Header header = record.headers().lastHeader(Constants.AuthService.AUTHORIZATION);
-           if (header != null) {
+           correlationId = new String(record.headers().lastHeader("correlationId").value());
+            if (header != null) {
                String token = new String(header.value());
                LOGGER.info("Token -------> : " + token);
                JWTService jwtService = applicationContext.getBean("JwtService", JWTService.class);
@@ -115,13 +124,20 @@ public class AuthorService extends BaseService {
                    String password = randomPassword();
                    String uuid = String.valueOf(UUID.randomUUID());
                    RegistryEmployeeConsumer employeeConsumer = objectMapperKafka.readValue(record.value(), RegistryEmployeeConsumer.class);
-                   AppUser appUser = new AppUser(uuid, employeeConsumer.getAccount(),
-                           password, employeeConsumer.getEmail(), employeeConsumer.getTelephone());
-                   AppUser appUserSave = iAppUserRepo.save(appUser);
-                   roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_EMPLOYEE.getCode());
+//                   AppUser appUser = new AppUser(uuid, employeeConsumer.getAccount(),
+//                           password, employeeConsumer.getEmail(), employeeConsumer.getTelephone());
+//                   AppUser appUserSave = iAppUserRepo.save(appUser);
+//                   roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_EMPLOYEE.getCode());
                }
-           }
+            }
        }catch (Exception e) {
+            Properties props = new Properties();
+            props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+            props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
+            Producer<String, String> producer = new KafkaProducer<>(props);
+            ProducerRecord<String, String> responseRecord = new ProducerRecord<>(correlationId, "Success !");
+            producer.send(responseRecord);
            LOGGER.error("Registry employee ------> fail :" + e.getMessage());
        }
     }
