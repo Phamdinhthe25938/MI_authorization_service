@@ -14,12 +14,12 @@
 	<name>author_service</name>
 	<description>author_service</description>
 	<properties>
-		<java.version>1.8</java.version>
+		<java.version>11</java.version>
 		<spring-cloud.version>2021.0.4</spring-cloud.version>
 	</properties>
 	<dependencies>
 		<dependency>
-			<groupId>com.obys</groupId>
+			<groupId>com.example</groupId>
 			<artifactId>common</artifactId>
 			<version>1.0-SNAPSHOT</version>
 		</dependency>
