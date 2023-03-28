@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class RegistryEmployeeConsumer {
-    private String account12;
+    private String account;
 
-    private String email123;
+    private String email;
 
-    private String telephone321;
+    private String telephone;
 }

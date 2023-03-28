@@ -53,18 +53,19 @@ public class AuthorService extends BaseService {
     private final static Logger LOGGER = LoggerFactory.getLogger(AuthorService.class);
     @Resource
     private KafkaTemplate<String, String> kafkaTemplate;
-//    @Resource
-//    private KafkaProducer<String, String> kafkaProducer;
     @Resource
+    @Qualifier("IAppUserRepo")
     IAppUserRepo iAppUserRepo;
     @Resource
+    @Qualifier("RoleService")
     private RoleService roleService;
     @Resource
     @Qualifier("JwtService")
-    private  JWTService jwtService;
+    private JWTService jwtService;
     @Resource
-    private  AuthenticationManager authenticationManager;
+    private AuthenticationManager authenticationManager;
     @Resource
+    @Qualifier("ModelMapper")
     private ModelMapper modelMapper;
     @Resource
     private ObjectMapper objectMapper;
@@ -104,42 +105,33 @@ public class AuthorService extends BaseService {
                 SystemMessageCode.AuthService.MESSAGE_REGISTRY_SUCCESS,
                 response);
     }
-    private static final String TOPIC = "service2-response";
-    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
+
     @KafkaListener(topics = Topic.TOPIC_REGISTRY_EMPLOYEE)
     private void registryEmployee(ConsumerRecord<String, String> record) {
         ApplicationContext applicationContext = ApplicationContextProvider.getApplicationContext();
-        String correlationId = null;
+        String uuid;
         try {
-           Header header = record.headers().lastHeader(Constants.AuthService.AUTHORIZATION);
-           correlationId = new String(record.headers().lastHeader("correlationId").value());
+            Header header = record.headers().lastHeader(Constants.AuthService.AUTHORIZATION);
+            uuid = new String(record.headers().lastHeader(Constants.AuthService.UUID).value());
             if (header != null) {
-               String token = new String(header.value());
-               LOGGER.info("Token -------> : " + token);
-               JWTService jwtService = applicationContext.getBean("JwtService", JWTService.class);
-               IAppUserRepo iAppUserRepo = applicationContext.getBean("IAppUserRepo", IAppUserRepo.class);
-               RoleService roleService = applicationContext.getBean("RoleService", RoleService.class);
-               if (jwtService.validateToken(token)) {
-                   ObjectMapper objectMapperKafka = new ObjectMapper();
-                   String password = randomPassword();
-                   String uuid = String.valueOf(UUID.randomUUID());
-                   RegistryEmployeeConsumer employeeConsumer = objectMapperKafka.readValue(record.value(), RegistryEmployeeConsumer.class);
-//                   AppUser appUser = new AppUser(uuid, employeeConsumer.getAccount(),
-//                           password, employeeConsumer.getEmail(), employeeConsumer.getTelephone());
-//                   AppUser appUserSave = iAppUserRepo.save(appUser);
-//                   roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_EMPLOYEE.getCode());
-               }
+                String token = new String(header.value());
+                LOGGER.info("Token -------> : " + token);
+                JWTService jwtService = applicationContext.getBean("JwtService", JWTService.class);
+                IAppUserRepo iAppUserRepo = applicationContext.getBean("IAppUserRepo", IAppUserRepo.class);
+                RoleService roleService = applicationContext.getBean("RoleService", RoleService.class);
+                if (jwtService.validateToken(token)) {
+                    ObjectMapper objectMapperKafka = new ObjectMapper();
+                    String password = randomPassword();
+                    RegistryEmployeeConsumer employeeConsumer = objectMapperKafka.readValue(record.value(), RegistryEmployeeConsumer.class);
+                    AppUser appUser = new AppUser(uuid, employeeConsumer.getAccount(),
+                            password, employeeConsumer.getEmail(), employeeConsumer.getTelephone());
+                    AppUser appUserSave = iAppUserRepo.save(appUser);
+                    roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_EMPLOYEE.getCode());
+                }
             }
-       }catch (Exception e) {
-            Properties props = new Properties();
-            props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
-            props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-            props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-            Producer<String, String> producer = new KafkaProducer<>(props);
-            ProducerRecord<String, String> responseRecord = new ProducerRecord<>(correlationId, "Success !");
-            producer.send(responseRecord);
-           LOGGER.error("Registry employee ------> fail :" + e.getMessage());
-       }
+        } catch (Exception e) {
+            LOGGER.error("Registry employee ------> fail :" + e.getMessage());
+        }
     }
 
     public void validateRegistry(AccountRegistryRequest request) {

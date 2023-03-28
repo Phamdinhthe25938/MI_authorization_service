@@ -63,7 +63,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
         return validator();
     }
 
-    @Bean
+    @Bean(name = "ModelMapper")
     public ModelMapper getModelMapper() {
         ModelMapper modelMapper = new ModelMapper();
         modelMapper.getConfiguration()
