@@ -121,6 +121,7 @@ public class AuthorService extends BaseService {
               password, employeeConsumer.getEmail(), employeeConsumer.getTelephone());
           AppUser appUserSave = iAppUserRepo.save(appUser);
           roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_EMPLOYEE.getCode());
+          roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_USER.getCode());
         }
       }
     } catch (Exception e) {
