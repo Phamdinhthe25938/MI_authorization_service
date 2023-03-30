@@ -23,41 +23,42 @@ import java.io.IOException;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
+  private final static Logger LOGGER = LoggerFactory.getLogger(JwtAuthenticationFilter.class);
 
-    @Resource
-    private JWTService jwtService;
+  @Resource
+  private JWTService jwtService;
 
-    @Resource
-    private AppUserService appUserService;
+  @Resource
+  private AppUserService appUserService;
 
-    @Resource
-    private Base64EnCode base64EnCode;
+  @Resource
+  private Base64EnCode base64EnCode;
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        try {
-            String base64 = request.getHeader("En_code");
-            String codeDecrypt = base64EnCode.decrypt(base64);
-            if (codeDecrypt != null) {
-                String token = jwtService.getTokenFromRequest(request);
-                if (token != null) {
-                    if (jwtService.validateToken(token)) {
-                        String username = jwtService.getSubjectFromToken(token);
-                        if (username != null) {
-                            UserDetails userDetails = appUserService.loadUserByUsername(username);
-                            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                                    userDetails, null, userDetails.getAuthorities());
-                            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                            SecurityContextHolder.getContext().setAuthentication(authentication);
-                        }
-                    }
-                }
+  @Override
+  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    try {
+      String base64 = request.getHeader("En_code");
+      String codeDecrypt = base64EnCode.decrypt(base64);
+      if (codeDecrypt != null) {
+        String token = jwtService.getTokenFromRequest(request);
+        if (token != null) {
+          if (jwtService.validateToken(token)) {
+            String username = jwtService.getSubjectFromToken(token);
+            if (username != null) {
+              UserDetails userDetails = appUserService.loadUserByUsername(username);
+              UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                  userDetails, null, userDetails.getAuthorities());
+              authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+              SecurityContextHolder.getContext().setAuthentication(authentication);
             }
-        } catch (Exception e) {
-            LOGGER.error("Can NOT set user authentication -> Message: {}" + e.getMessage());
+          }
         }
-        filterChain.doFilter(request, response);
+      }
+    } catch (Exception e) {
+      LOGGER.error("Can NOT set user authentication -> Message: {}" + e.getMessage());
+      return;
     }
+    filterChain.doFilter(request, response);
+  }
 
 }

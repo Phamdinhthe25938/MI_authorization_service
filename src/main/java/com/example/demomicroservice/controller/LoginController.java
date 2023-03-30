@@ -17,16 +17,16 @@ import javax.validation.Valid;
 @RestController
 @RequestMapping("/api/auth")
 public class LoginController {
-    @Resource
-    AuthorService userService;
+  @Resource
+  AuthorService userService;
 
-    @PostMapping("/login")
-    public ResponseEntity<?> login(@Valid @RequestBody AccountLoginRequest request, BindingResult result) {
-        return new ResponseEntity<>(userService.login(request, result), HttpStatus.OK);
-    }
+  @PostMapping("/login")
+  public ResponseEntity<?> login(@Valid @RequestBody AccountLoginRequest request, BindingResult result) {
+    return new ResponseEntity<>(userService.login(request, result), HttpStatus.OK);
+  }
 
-    @PostMapping("/registry")
-    public ResponseEntity<?> hello(@Valid @RequestBody AccountRegistryRequest request, BindingResult result) {
-        return new ResponseEntity<>(userService.registryUser(request, result), HttpStatus.OK);
-    }
+  @PostMapping("/registry")
+  public ResponseEntity<?> hello(@Valid @RequestBody AccountRegistryRequest request, BindingResult result) {
+    return new ResponseEntity<>(userService.registryUser(request, result), HttpStatus.OK);
+  }
 }

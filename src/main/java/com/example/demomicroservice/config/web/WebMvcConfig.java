@@ -18,58 +18,58 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @Configuration
 public class WebMvcConfig implements WebMvcConfigurer {
 
-    /**
-     * Locale resolver locale resolver.
-     *
-     * @return the locale resolver
-     */
-    @Bean
-    public LocaleResolver localeResolver() {
-        return new SmartLocaleResolver();
-    }
+  /**
+   * Locale resolver locale resolver.
+   *
+   * @return the locale resolver
+   */
+  @Bean
+  public LocaleResolver localeResolver() {
+    return new SmartLocaleResolver();
+  }
 
-    /**
-     * Gets message source.
-     *
-     * @return the message source
-     */
-    @Bean(name = "messageSource")
-    public MessageSource getMessageSource() {
-        ReloadableResourceBundleMessageSource messageSource =
-            new ReloadableResourceBundleMessageSource();
-        messageSource.setBasenames(
-            "file:i18n/common/common",
-            "file:i18n/messages/messages",
-            "file:i18n/validator/validator",
-            "file:i18n/field/field");
-        messageSource.setDefaultEncoding("UTF-8");
-        return messageSource;
-    }
+  /**
+   * Gets message source.
+   *
+   * @return the message source
+   */
+  @Bean(name = "messageSource")
+  public MessageSource getMessageSource() {
+    ReloadableResourceBundleMessageSource messageSource =
+        new ReloadableResourceBundleMessageSource();
+    messageSource.setBasenames(
+        "file:i18n/common/common",
+        "file:i18n/messages/messages",
+        "file:i18n/validator/validator",
+        "file:i18n/field/field");
+    messageSource.setDefaultEncoding("UTF-8");
+    return messageSource;
+  }
 
-    /**
-     * Validator local validator factory bean.
-     *
-     * @return the local validator factory bean
-     */
-    @Bean
-    public LocalValidatorFactoryBean validator() {
-        LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
-        bean.setValidationMessageSource(getMessageSource());
-        return bean;
-    }
+  /**
+   * Validator local validator factory bean.
+   *
+   * @return the local validator factory bean
+   */
+  @Bean
+  public LocalValidatorFactoryBean validator() {
+    LocalValidatorFactoryBean bean = new LocalValidatorFactoryBean();
+    bean.setValidationMessageSource(getMessageSource());
+    return bean;
+  }
 
-    @Override
-    public Validator getValidator() {
-        return validator();
-    }
+  @Override
+  public Validator getValidator() {
+    return validator();
+  }
 
-    @Bean(name = "ModelMapper")
-    public ModelMapper getModelMapper() {
-        ModelMapper modelMapper = new ModelMapper();
-        modelMapper.getConfiguration()
-            .setMatchingStrategy(MatchingStrategies.STRICT);
-        return modelMapper;
-    }
+  @Bean(name = "ModelMapper")
+  public ModelMapper getModelMapper() {
+    ModelMapper modelMapper = new ModelMapper();
+    modelMapper.getConfiguration()
+        .setMatchingStrategy(MatchingStrategies.STRICT);
+    return modelMapper;
+  }
 
 }
 

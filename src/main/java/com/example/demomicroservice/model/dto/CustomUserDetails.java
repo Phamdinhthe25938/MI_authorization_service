@@ -13,40 +13,40 @@ import java.util.Collection;
 @NoArgsConstructor
 public class CustomUserDetails implements UserDetails {
 
-    private String username;
+  private String username;
 
-    @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return null;
-    }
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+    return null;
+  }
 
-    @Override
-    public String getPassword() {
-        return null;
-    }
+  @Override
+  public String getPassword() {
+    return null;
+  }
 
-    @Override
-    public String getUsername() {
-        return this.username;
-    }
+  @Override
+  public String getUsername() {
+    return this.username;
+  }
 
-    @Override
-    public boolean isAccountNonExpired() {
-        return false;
-    }
+  @Override
+  public boolean isAccountNonExpired() {
+    return false;
+  }
 
-    @Override
-    public boolean isAccountNonLocked() {
-        return false;
-    }
+  @Override
+  public boolean isAccountNonLocked() {
+    return false;
+  }
 
-    @Override
-    public boolean isCredentialsNonExpired() {
-        return false;
-    }
+  @Override
+  public boolean isCredentialsNonExpired() {
+    return false;
+  }
 
-    @Override
-    public boolean isEnabled() {
-        return false;
-    }
+  @Override
+  public boolean isEnabled() {
+    return false;
+  }
 }

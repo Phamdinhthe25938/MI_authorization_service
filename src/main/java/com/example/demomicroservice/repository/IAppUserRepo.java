@@ -13,24 +13,25 @@ import java.util.List;
 
 @Repository("IAppUserRepo")
 public interface IAppUserRepo extends CrudRepository<AppUser, Long> {
-    AppUser findByUserName(String username);
+  AppUser findByUserName(String username);
 
-    AppUser findAppUsersByPhoneNumber(String phone);
-    AppUser findAppUsersByGmail(String gmail);
+  AppUser findAppUsersByPhoneNumber(String phone);
 
-    @Transactional
-    @Modifying
-    @Query(nativeQuery = true, value = "insert into app_user_roles value (:id, :role)")
-    void saveRoleUser(@Param("id") Long id, @Param("role") int role);
+  AppUser findAppUsersByGmail(String gmail);
 
-    @Query(nativeQuery = true, value =
-        "select au.user_name, r.role " +
-            "from app_user as au " +
-            "left join app_user_roles as aur " +
-            "on au.id = aur.app_user_id " +
-            "left join role as r " +
-            "on aur.roles_id = r.id " +
-            "where au.user_name  = :userName")
-    List<GetRole> getRole(@Param("userName") String userName);
+  @Transactional
+  @Modifying
+  @Query(nativeQuery = true, value = "insert into app_user_roles value (:id, :role)")
+  void saveRoleUser(@Param("id") Long id, @Param("role") int role);
+
+  @Query(nativeQuery = true, value =
+      "select au.user_name, r.role " +
+          "from app_user as au " +
+          "left join app_user_roles as aur " +
+          "on au.id = aur.app_user_id " +
+          "left join role as r " +
+          "on aur.roles_id = r.id " +
+          "where au.user_name  = :userName")
+  List<GetRole> getRole(@Param("userName") String userName);
 
 }

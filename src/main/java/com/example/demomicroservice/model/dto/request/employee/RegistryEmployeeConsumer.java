@@ -11,9 +11,9 @@ import lombok.NoArgsConstructor;
 @Builder
 public class RegistryEmployeeConsumer {
 
-    private String account;
+  private String account;
 
-    private String email;
+  private String email;
 
-    private String telephone;
+  private String telephone;
 }

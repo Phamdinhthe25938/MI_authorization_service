@@ -15,14 +15,14 @@ import javax.persistence.Id;
 @AllArgsConstructor
 @NoArgsConstructor
 public class Role implements GrantedAuthority {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private long id;
-    private String role;
+  @Id
+  @GeneratedValue(strategy = GenerationType.IDENTITY)
+  private long id;
+  private String role;
 
 
-    @Override
-    public String getAuthority() {
-        return role;
-    }
+  @Override
+  public String getAuthority() {
+    return role;
+  }
 }

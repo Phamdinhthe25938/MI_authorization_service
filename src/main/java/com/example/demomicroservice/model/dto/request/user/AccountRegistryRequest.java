@@ -15,20 +15,20 @@ import org.hibernate.validator.constraints.Length;
 @Builder
 public class AccountRegistryRequest {
 
-    @Length(max = 20)
-    @Required(message = "{username.required}")
-    private String userName;
+  @Length(max = 20)
+  @Required(message = "{username.required}")
+  private String userName;
 
-    @Length(max = 20)
-    @Required(message = "{password.required}")
-    private String password;
+  @Length(max = 20)
+  @Required(message = "{password.required}")
+  private String password;
 
-    @Gmail(message = "{gmail.invalid}")
-    @Required(message = "{gmail.required}")
-    private String gmail;
+  @Gmail(message = "{gmail.invalid}")
+  @Required(message = "{gmail.required}")
+  private String gmail;
 
-    @Phone(message = "{phone.invalid}")
-    @Required(message = "{phone.required}")
-    private String phoneNumber;
+  @Phone(message = "{phone.invalid}")
+  @Required(message = "{phone.required}")
+  private String phoneNumber;
 
 }

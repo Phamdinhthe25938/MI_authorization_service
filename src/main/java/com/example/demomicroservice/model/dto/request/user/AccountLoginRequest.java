@@ -4,7 +4,6 @@ import com.obys.common.validator.annotation.Required;
 import lombok.*;
 
 
-
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -12,10 +11,10 @@ import lombok.*;
 @Setter
 public class AccountLoginRequest {
 
-    @Required(message = "{username.required}")
-    private String userName;
+  @Required(message = "{username.required}")
+  private String userName;
 
-    @Required(message = "{password.required}")
-    private String password;
+  @Required(message = "{password.required}")
+  private String password;
 
 }
