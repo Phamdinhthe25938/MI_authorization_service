@@ -72,9 +72,11 @@ public class AuthorService extends BaseService {
           new UsernamePasswordAuthenticationToken(request.getUserName(), request.getPassword()));
       SecurityContextHolder.getContext().setAuthentication(authentication);
       User user = (User) authentication.getPrincipal();
+      String token = jwtService.createToken(user);
+      iAppUserRepo.updateToken(token, request.getUserName());
       return responseV1(SystemMessageCode.AuthService.CODE_LOGIN_SUCCESS,
           SystemMessageCode.AuthService.MESSAGE_LOGIN_SUCCESS
-          , AccountLoginResponse.builder().token(jwtService.createToken(user)).build());
+          , AccountLoginResponse.builder().token(token).build());
     } catch (Exception e) {
       return responseV1(
           SystemMessageCode.AuthService.CODE_LOGIN_ERROR,

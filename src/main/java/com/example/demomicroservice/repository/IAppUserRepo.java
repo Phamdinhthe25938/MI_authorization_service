@@ -34,4 +34,8 @@ public interface IAppUserRepo extends CrudRepository<AppUser, Long> {
           "where au.user_name  = :userName")
   List<GetRole> getRole(@Param("userName") String userName);
 
+  @Modifying
+  @Transactional
+  @Query(nativeQuery = true, value = "update app_user set token = :token where user_name = :userName")
+  void updateToken(@Param("token") String token, @Param("userName") String userName);
 }
