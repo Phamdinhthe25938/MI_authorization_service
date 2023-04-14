@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.checkerframework.common.aliasing.qual.Unique;
 
 import javax.persistence.*;
+import javax.validation.constraints.Max;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 
@@ -37,11 +38,12 @@ public class AppUser extends BaseEntity {
   @ManyToMany(fetch = FetchType.EAGER)
   private Set<Role> roles;
 
-  public AppUser(@Unique String uuid, String userName, String password, String gmail, String phoneNumber) {
+  public AppUser(@Unique String uuid, String userName, String password, String gmail, String phoneNumber, String token) {
     this.uuid = uuid;
     this.userName = userName;
     this.password = password;
     this.gmail = gmail;
     this.phoneNumber = phoneNumber;
+    this.token = token;
   }
 }

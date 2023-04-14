@@ -95,6 +95,15 @@
         </dependency>
         <!--==========-->
 
+        <!-- Captcha verify -->
+        <dependency>
+            <groupId>com.octo.captcha</groupId>
+            <artifactId>jcaptcha</artifactId>
+            <version>1.0</version>
+        </dependency>
+
+        <!--==========-->
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>

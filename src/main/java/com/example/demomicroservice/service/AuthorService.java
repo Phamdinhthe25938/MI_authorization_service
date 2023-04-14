@@ -2,8 +2,9 @@ package com.example.demomicroservice.service;
 
 import com.example.demomicroservice.config.web.ApplicationContextProvider;
 import com.example.demomicroservice.model.dto.communicate_kafka.employee.RegistryEmployeeConsumer;
+import com.example.demomicroservice.model.dto.request.manager_personal.AccountManagerPersonalRegistryRequest;
 import com.example.demomicroservice.model.dto.request.user.AccountLoginRequest;
-import com.example.demomicroservice.model.dto.request.user.AccountRegistryRequest;
+import com.example.demomicroservice.model.dto.request.user.AccountUserRegistryRequest;
 import com.example.demomicroservice.model.dto.response.user.AccountLoginResponse;
 import com.example.demomicroservice.model.dto.response.user.AccountRegistryResponse;
 import com.example.demomicroservice.model.entity.AppUser;
@@ -33,6 +34,7 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -61,9 +63,6 @@ public class AuthorService extends BaseService {
   @Resource
   @Qualifier("ModelMapper")
   private ModelMapper modelMapper;
-  @Resource
-  private ObjectMapper objectMapper;
-
   @Transactional(rollbackFor = Exception.class)
   public BaseResponse<?> login(AccountLoginRequest request, BindingResult result) {
     try {
@@ -87,9 +86,9 @@ public class AuthorService extends BaseService {
   }
 
   @Transactional(rollbackFor = Exception.class)
-  public BaseResponse<?> registryUser(AccountRegistryRequest request, BindingResult result) {
+  public BaseResponse<?> registryUser(AccountUserRegistryRequest request, BindingResult result) {
     hasError(result);
-    validateRegistry(request);
+    validateUserRegistry(request);
     AppUser appUser = modelMapper.map(request, AppUser.class);
     String uuid = String.valueOf(UUID.randomUUID());
     appUser.setUuid(uuid);
@@ -102,6 +101,24 @@ public class AuthorService extends BaseService {
         response);
   }
 
+  @Transactional(rollbackFor = Exception.class)
+  public BaseResponse<?> registryManagerPersonal(AccountManagerPersonalRegistryRequest request, BindingResult result) {
+    hasError(result);
+    validateManagerPersonalRegistry(request);
+    AppUser appUser = modelMapper.map(request, AppUser.class);
+    String uuid = String.valueOf(UUID.randomUUID());
+    appUser.setUuid(uuid);
+    appUser.setToken("");
+    AppUser appUserSave = iAppUserRepo.save(appUser);
+    roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_MANAGER_PERSONAL.getCode());
+    roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_EMPLOYEE.getCode());
+    roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_USER.getCode());
+    AccountRegistryResponse response = modelMapper.map(appUserSave, AccountRegistryResponse.class);
+    response.setRoles(Stream.of(RoleEnum.ROLE_MANAGER_PERSONAL.getValue(), RoleEnum.ROLE_EMPLOYEE.getValue(), RoleEnum.ROLE_USER.getValue()).collect(Collectors.toList()));
+    return responseV1(SystemMessageCode.AuthService.CODE_REGISTRY_SUCCESS,
+        SystemMessageCode.AuthService.MESSAGE_REGISTRY_SUCCESS,
+        response);
+  }
   @KafkaListener(topics = Topic.TOPIC_REGISTRY_EMPLOYEE)
   private void registryEmployee(ConsumerRecord<String, String> record) {
     ApplicationContext applicationContext = ApplicationContextProvider.getApplicationContext();
@@ -120,7 +137,7 @@ public class AuthorService extends BaseService {
           String password = randomPassword();
           RegistryEmployeeConsumer employeeConsumer = objectMapperKafka.readValue(record.value(), RegistryEmployeeConsumer.class);
           AppUser appUser = new AppUser(uuid, employeeConsumer.getAccount(),
-              password, employeeConsumer.getEmail(), employeeConsumer.getTelephone());
+              password, employeeConsumer.getEmail(), employeeConsumer.getTelephone(),"");
           AppUser appUserSave = iAppUserRepo.save(appUser);
           roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_EMPLOYEE.getCode());
           roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_USER.getCode());
@@ -131,11 +148,18 @@ public class AuthorService extends BaseService {
     }
   }
 
-  public void validateRegistry(AccountRegistryRequest request) {
+  public void validateUserRegistry(AccountUserRegistryRequest request) {
     checkUserNameExist(request.getUserName());
     checkEmailExist(request.getGmail());
     checkPhoneExist(request.getPhoneNumber());
   }
+
+  public void validateManagerPersonalRegistry(AccountManagerPersonalRegistryRequest request) {
+    checkUserNameExist(request.getUserName());
+    checkEmailExist(request.getGmail());
+    checkPhoneExist(request.getPhoneNumber());
+  }
+
 
   private void checkUserNameExist(String userName) {
     if (iAppUserRepo.findByUserName(userName) != null) {
