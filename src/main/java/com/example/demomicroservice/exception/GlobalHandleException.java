@@ -1,9 +1,9 @@
 package com.example.demomicroservice.exception;
 
-import com.obys.common.exception.ErrorV1Exception;
-import com.obys.common.exception.ErrorV2Exception;
-import com.obys.common.exception.HasErrorException;
-import com.obys.common.service.BaseService;
+import com.the.common.exception.ErrorV1Exception;
+import com.the.common.exception.ErrorV2Exception;
+import com.the.common.exception.HasErrorException;
+import com.the.common.service.BaseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;

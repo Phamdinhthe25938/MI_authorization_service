@@ -2,8 +2,8 @@ package com.example.demomicroservice.service;
 
 import com.example.demomicroservice.model.dto.mapper.GetRole;
 import com.example.demomicroservice.repository.IAppUserRepo;
-import com.obys.common.constant.Constants;
-import com.obys.common.service.BaseService;
+import com.the.common.constant.Constants;
+import com.the.common.service.BaseService;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;

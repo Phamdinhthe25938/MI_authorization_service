@@ -10,13 +10,13 @@ import com.example.demomicroservice.model.dto.response.user.AccountRegistryRespo
 import com.example.demomicroservice.model.entity.AppUser;
 import com.example.demomicroservice.repository.IAppUserRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.obys.common.constant.Constants;
-import com.obys.common.enums.RoleEnum;
-import com.obys.common.exception.ErrorV1Exception;
-import com.obys.common.kafka.Topic;
-import com.obys.common.model.payload.response.BaseResponse;
-import com.obys.common.service.BaseService;
-import com.obys.common.system_message.SystemMessageCode;
+import com.the.common.constant.Constants;
+import com.the.common.enums.RoleEnum;
+import com.the.common.exception.ErrorV1Exception;
+import com.the.common.kafka.Topic;
+import com.the.common.model.payload.response.BaseResponse;
+import com.the.common.service.BaseService;
+import com.the.common.system_message.SystemMessageCode;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.header.Header;
 import org.modelmapper.ModelMapper;
@@ -34,7 +34,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.client.RestTemplate;
 
 import javax.annotation.Resource;
 import java.util.List;

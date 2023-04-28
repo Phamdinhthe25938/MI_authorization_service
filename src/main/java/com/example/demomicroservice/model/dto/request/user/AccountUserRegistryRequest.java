@@ -1,8 +1,8 @@
 package com.example.demomicroservice.model.dto.request.user;
 
-import com.obys.common.validator.annotation.Gmail;
-import com.obys.common.validator.annotation.Phone;
-import com.obys.common.validator.annotation.Required;
+import com.the.common.validator.annotation.Gmail;
+import com.the.common.validator.annotation.Phone;
+import com.the.common.validator.annotation.Required;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;

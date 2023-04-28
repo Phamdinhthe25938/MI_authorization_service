@@ -1,6 +1,6 @@
 package com.example.demomicroservice.config.web;
 
-import com.obys.common.config.i18n.SmartLocaleResolver;
+import com.the.common.config.i18n.SmartLocaleResolver;
 import org.modelmapper.ModelMapper;
 import org.modelmapper.convention.MatchingStrategies;
 import org.springframework.context.MessageSource;
