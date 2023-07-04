@@ -15,7 +15,7 @@
     <description>author_service</description>
     <properties>
         <java.version>11</java.version>
-        <spring-cloud.version>2021.0.4</spring-cloud.version>
+        <spring-cloud.version>2021.0.6</spring-cloud.version>
     </properties>
     <dependencies>
         <dependency>
@@ -134,7 +134,7 @@
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>${spring-cloud.version}</version>
+                <version>2021.0.6</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
