@@ -12,7 +12,7 @@
     <artifactId>author_service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>author_service</name>
-    <description>author_service</description>
+    <description>Demo project for Spring Boot</description>
     <properties>
         <java.version>11</java.version>
         <spring-cloud.version>2021.0.6</spring-cloud.version>
@@ -95,15 +95,6 @@
         </dependency>
         <!--==========-->
 
-        <!-- Captcha verify -->
-        <dependency>
-            <groupId>com.octo.captcha</groupId>
-            <artifactId>jcaptcha</artifactId>
-            <version>1.0</version>
-        </dependency>
-
-        <!--==========-->
-
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -128,13 +119,62 @@
             <artifactId>modelmapper</artifactId>
             <version>2.3.0</version>
         </dependency>
+        <!-- ===== LOGGER ==== -->
+
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>2.0.0-alpha4</version>
+        </dependency>
+
+        <!-- ===== JAVA TIME 8 ====  -->
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jsr310</artifactId>
+            <version>2.14.1</version>
+        </dependency>
+        <!-- ===== OPEN CV ====  -->
+        <dependency>
+            <groupId>org.openpnp</groupId>
+            <artifactId>opencv</artifactId>
+            <version>3.4.2-0</version>
+        </dependency>
+
+        <!-- ===== WEB SOCKET ====  -->
+        <dependency>
+            <groupId>javax.websocket</groupId>
+            <artifactId>javax.websocket-api</artifactId>
+            <version>1.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.vladmihalcea</groupId>
+            <artifactId>hibernate-types-52</artifactId>
+            <version>2.21.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>2.14.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-json</artifactId>
+            <version>3.0.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-websocket</artifactId>
+        </dependency>
     </dependencies>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-dependencies</artifactId>
-                <version>2021.0.6</version>
+                <version>${spring-cloud.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>

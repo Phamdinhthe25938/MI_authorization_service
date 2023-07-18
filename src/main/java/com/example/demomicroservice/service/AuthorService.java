@@ -118,7 +118,7 @@ public class AuthorService extends BaseService {
         SystemMessageCode.AuthService.MESSAGE_REGISTRY_SUCCESS,
         response);
   }
-  @KafkaListener(topics = Topic.TOPIC_REGISTRY_EMPLOYEE)
+//  @KafkaListener(topics = Topic.TOPIC_REGISTRY_EMPLOYEE)
   private void registryEmployee(ConsumerRecord<String, String> record) {
     ApplicationContext applicationContext = ApplicationContextProvider.getApplicationContext();
     String uuid;
