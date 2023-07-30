@@ -49,7 +49,7 @@
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
-            <version>8.0.24</version>
+            <version>8.0.33</version>
         </dependency>
         <!--==========-->
 
@@ -62,13 +62,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>
-        <!--==========-->
-
-        <!-- Send Mail -->
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-mail</artifactId>
         </dependency>
         <!--==========-->
 
@@ -94,6 +87,14 @@
             <version>3.3.2</version>
         </dependency>
         <!--==========-->
+
+        <!--  RabbitMQ -->
+
+            <!-- Other dependencies -->
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-amqp</artifactId>
+            </dependency>
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
