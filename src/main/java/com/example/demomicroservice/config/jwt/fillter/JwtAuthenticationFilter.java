@@ -4,6 +4,9 @@ package com.example.demomicroservice.config.jwt.fillter;
 import com.example.demomicroservice.config.jwt.en_code.Base64EnCode;
 import com.example.demomicroservice.service.AppUserService;
 import com.example.demomicroservice.service.JWTService;
+import com.the.common.constant.Constants;
+import com.the.common.en_code.Base64Code;
+import com.the.common.model.CustomUserDetails;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -13,6 +16,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Resource;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -27,38 +31,26 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
   @Resource
   private JWTService jwtService;
-
-  @Resource
-  private AppUserService appUserService;
-
   @Resource
   private Base64EnCode base64EnCode;
 
   @Override
-  protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-    try {
-      String base64 = request.getHeader("En_code");
-      String codeDecrypt = base64EnCode.decrypt(base64);
-      if (codeDecrypt != null) {
-        String token = jwtService.getTokenFromRequest(request);
-        if (token != null) {
-          if (jwtService.validateToken(token)) {
-            String username = jwtService.getSubjectFromToken(token);
-            if (username != null) {
-              UserDetails userDetails = appUserService.loadUserByUsername(username);
-              UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                  userDetails, null, userDetails.getAuthorities());
-              authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-              SecurityContextHolder.getContext().setAuthentication(authentication);
-            }
-          }
-        }
+  protected void doFilterInternal(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull FilterChain chain) throws ServletException, IOException {
+    LOGGER.info("Request go employee-service filter !");
+    String codeDecrypt = base64EnCode.decrypt(request.getHeader(Base64Code.KEY), request.getHeader(Base64Code.BASE64_CODE));
+    String userName;
+    if (codeDecrypt != null) {
+      String token = jwtService.getTokenFromRequest(request);
+      if (token != null) {
+        userName = jwtService.getSubjectFromToken(token);
+        UserDetails userDetails = new CustomUserDetails(userName);
+        UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            userDetails, request.getHeader(Constants.AuthService.AUTHORIZATION), userDetails.getAuthorities());
+        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+        LOGGER.info("Finish employee-service filter !");
       }
-    } catch (Exception e) {
-      LOGGER.error("Can NOT set user authentication -> Message: {}" + e.getMessage());
-      return;
     }
-    filterChain.doFilter(request, response);
+    chain.doFilter(request, response);
   }
-
 }

@@ -10,7 +10,7 @@ import java.util.Base64;
 @Service
 public class Base64EnCode {
 
-  public String decrypt(String encryptedBase64) {
+  public String decrypt(String encryptedBase64, String header) {
     try {
       // Split the encrypted Base64 string and the AES key
       String[] parts = encryptedBase64.split(":");

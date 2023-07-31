@@ -1,7 +1,6 @@
 package com.example.demomicroservice;
 
 import com.example.demomicroservice.config.web.ApplicationContextProvider;
-import com.example.demomicroservice.service.AuthorService;
 import com.the.common.constant.rabbitMQ.RabbitMQConstant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,19 +46,19 @@ public class AuthorServiceApplication {
 
     }
 
-    @RabbitListener(queues = RabbitMQConstant.Queue.QUEUE_AUTHOR)
-    public String receiveMessageFromQueue1(List<String> list) throws InterruptedException {
-        System.out.println("Received message from Queue 1: " + list.size());
+//    @RabbitListener(queues = RabbitMQConstant.Queue.QUEUE_AUTHOR)
+//    public String receiveMessageFromQueue1(List<String> list) throws InterruptedException {
+//        System.out.println("Received message from Queue 1: " + list.size());
+//
+//        Thread.sleep(3000);
+//        return list.size() + "ok ban nha";
+//    }
 
-        Thread.sleep(3000);
-        return list.size() + "ok ban nha";
-    }
-
-    @RabbitListener(queues = RabbitMQConstant.Queue.QUEUE_AUTHOR)
-    public String receiveMessageFromQueue2(String message) throws InterruptedException {
-        System.out.println("Received message from Queue 2: " + message);
-
-        Thread.sleep(3000);
-        return message + " ok nha toi la queue 2";
-    }
+//    @RabbitListener(queues = RabbitMQConstant.Queue.QUEUE_AUTHOR)
+//    public String receiveMessageFromQueue2(String message) throws InterruptedException {
+//        System.out.println("Received message from Queue 2: " + message);
+//
+//        Thread.sleep(3000);
+//        return message + " ok nha toi la queue 2";
+//    }
 }

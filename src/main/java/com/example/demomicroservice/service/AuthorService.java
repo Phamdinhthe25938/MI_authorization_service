@@ -11,6 +11,7 @@ import com.example.demomicroservice.model.entity.AppUser;
 import com.example.demomicroservice.repository.IAppUserRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.the.common.constant.Constants;
+import com.the.common.constant.redis.RedisKey;
 import com.the.common.enums.RoleEnum;
 import com.the.common.exception.ErrorV1Exception;
 import com.the.common.model.payload.response.BaseResponse;
@@ -23,17 +24,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
-import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -45,7 +49,7 @@ public class AuthorService extends BaseService {
 
   private final static Logger LOGGER = LoggerFactory.getLogger(AuthorService.class);
   @Resource
-  private KafkaTemplate<String, String> kafkaTemplate;
+  private AppUserService appUserService;
   @Resource
   @Qualifier("IAppUserRepo")
   IAppUserRepo iAppUserRepo;
@@ -60,6 +64,46 @@ public class AuthorService extends BaseService {
   @Resource
   @Qualifier("ModelMapper")
   private ModelMapper modelMapper;
+  @Resource(name = "RedisTemplate")
+  private RedisTemplate<String, Object> redisTemplate;
+
+
+  public BaseResponse<?> validateToken(HttpServletRequest request) {
+    String token = jwtService.getTokenFromRequest(request);
+    if (jwtService.validateToken(token)) {
+      String userName = jwtService.getSubjectFromToken(token);
+      if (userName != null) {
+        try {
+          UserDetails userDetails = appUserService.loadUserByUsername(userName);
+
+          UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+              userDetails, token, userDetails.getAuthorities());
+
+          authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+          SecurityContextHolder.getContext().setAuthentication(authentication);
+
+          return responseV1(
+              SystemMessageCode.AuthService.CODE_TOKEN_SUCCESS,
+              SystemMessageCode.AuthService.MESSAGE_TOKEN_SUCCESS,
+              AccountLoginResponse.builder().token(null).build()
+          );
+
+        } catch (Exception e) {
+          return responseV1(
+              SystemMessageCode.AuthService.CODE_TOKEN_FAIL,
+              SystemMessageCode.AuthService.MESSAGE_TOKEN_FAIL,
+              AccountLoginResponse.builder().token(null).build()
+          );
+        }
+      }
+    }
+    return responseV1(
+        SystemMessageCode.AuthService.CODE_TOKEN_FAIL,
+        SystemMessageCode.AuthService.MESSAGE_TOKEN_FAIL,
+        AccountLoginResponse.builder().token(null).build()
+    );
+  }
+
   @Transactional(rollbackFor = Exception.class)
   public BaseResponse<?> login(AccountLoginRequest request, BindingResult result) {
     try {
@@ -69,6 +113,7 @@ public class AuthorService extends BaseService {
       SecurityContextHolder.getContext().setAuthentication(authentication);
       User user = (User) authentication.getPrincipal();
       String token = jwtService.createToken(user);
+      redisTemplate.opsForValue().set(String.format(RedisKey.KEY_TOKEN_ACCOUNT, request.getUserName()), token);
       iAppUserRepo.updateToken(token, request.getUserName());
       return responseV1(SystemMessageCode.AuthService.CODE_LOGIN_SUCCESS,
           SystemMessageCode.AuthService.MESSAGE_LOGIN_SUCCESS
@@ -105,7 +150,7 @@ public class AuthorService extends BaseService {
     AppUser appUser = modelMapper.map(request, AppUser.class);
     String uuid = String.valueOf(UUID.randomUUID());
     appUser.setUuid(uuid);
-    appUser.setToken("");
+    appUser.setToken("12345");
     AppUser appUserSave = iAppUserRepo.save(appUser);
     roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_MANAGER_PERSONAL.getCode());
     roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_EMPLOYEE.getCode());
@@ -116,7 +161,8 @@ public class AuthorService extends BaseService {
         SystemMessageCode.AuthService.MESSAGE_REGISTRY_SUCCESS,
         response);
   }
-//  @KafkaListener(topics = Topic.TOPIC_REGISTRY_EMPLOYEE)
+
+  //  @KafkaListener(topics = Topic.TOPIC_REGISTRY_EMPLOYEE)
   private void registryEmployee(ConsumerRecord<String, String> record) {
     ApplicationContext applicationContext = ApplicationContextProvider.getApplicationContext();
     String uuid;
@@ -134,7 +180,7 @@ public class AuthorService extends BaseService {
           String password = randomPassword();
           RegistryEmployeeConsumer employeeConsumer = objectMapperKafka.readValue(record.value(), RegistryEmployeeConsumer.class);
           AppUser appUser = new AppUser(uuid, employeeConsumer.getAccount(),
-              password, employeeConsumer.getEmail(), employeeConsumer.getTelephone(),"");
+              password, employeeConsumer.getEmail(), employeeConsumer.getTelephone(), "");
           AppUser appUserSave = iAppUserRepo.save(appUser);
           roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_EMPLOYEE.getCode());
           roleService.saveRoleUser(appUserSave.getId(), RoleEnum.ROLE_USER.getCode());

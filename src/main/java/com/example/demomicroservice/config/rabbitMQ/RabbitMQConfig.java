@@ -14,15 +14,15 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
 
-    @Bean
-    public ConnectionFactory connectionFactory() {
-        CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
-        connectionFactory.setHost("192.168.1.106");
-        connectionFactory.setPort(5672);
-        connectionFactory.setUsername("ricky");
-        connectionFactory.setPassword("25092002");
-        return connectionFactory;
-    }
+//    @Bean
+//    public ConnectionFactory connectionFactory() {
+//        CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
+//        connectionFactory.setHost("10.1.43.160");
+//        connectionFactory.setPort(5672);
+//        connectionFactory.setUsername("ricky");
+//        connectionFactory.setPassword("25092002");
+//        return connectionFactory;
+//    }
 
     @Bean
     public Queue queue() {
