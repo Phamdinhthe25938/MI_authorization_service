@@ -11,6 +11,7 @@ import com.example.demomicroservice.model.entity.AppUser;
 import com.example.demomicroservice.repository.IAppUserRepo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.the.common.constant.Constants;
+import com.the.common.constant.kafka.KafkaTopic;
 import com.the.common.constant.redis.RedisKey;
 import com.the.common.enums.RoleEnum;
 import com.the.common.exception.ErrorV1Exception;
@@ -25,6 +26,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -53,16 +55,13 @@ public class AuthorService extends BaseService {
   @Resource
   @Qualifier("IAppUserRepo")
   IAppUserRepo iAppUserRepo;
-  @Resource
-  @Qualifier("RoleService")
+  @Resource(name = "RoleService")
   private RoleService roleService;
-  @Resource
-  @Qualifier("JwtService")
+  @Resource(name = "JwtService")
   private JWTService jwtService;
   @Resource
   private AuthenticationManager authenticationManager;
-  @Resource
-  @Qualifier("ModelMapper")
+  @Resource(name = "ModelMapper")
   private ModelMapper modelMapper;
   @Resource(name = "RedisTemplate")
   private RedisTemplate<String, Object> redisTemplate;
@@ -162,7 +161,7 @@ public class AuthorService extends BaseService {
         response);
   }
 
-  //  @KafkaListener(topics = Topic.TOPIC_REGISTRY_EMPLOYEE)
+    @KafkaListener(topics = KafkaTopic.TOPIC_REGISTRY_EMPLOYEE)
   private void registryEmployee(ConsumerRecord<String, String> record) {
     ApplicationContext applicationContext = ApplicationContextProvider.getApplicationContext();
     String uuid;
@@ -179,6 +178,7 @@ public class AuthorService extends BaseService {
           ObjectMapper objectMapperKafka = new ObjectMapper();
           String password = randomPassword();
           RegistryEmployeeConsumer employeeConsumer = objectMapperKafka.readValue(record.value(), RegistryEmployeeConsumer.class);
+
           AppUser appUser = new AppUser(uuid, employeeConsumer.getAccount(),
               password, employeeConsumer.getEmail(), employeeConsumer.getTelephone(), "");
           AppUser appUserSave = iAppUserRepo.save(appUser);
